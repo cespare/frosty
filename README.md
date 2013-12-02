@@ -9,9 +9,10 @@ Status: barely started.
 ## TODO:
 
 - MVP:
-  - cubes
+  - ~~cubes~~
   - light source
   - shadows
+- antialiasing
 - background (planes)
 - spheres
 - reflection
