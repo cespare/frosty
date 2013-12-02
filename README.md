@@ -13,6 +13,7 @@ Status: barely started.
   - light source
   - shadows
 - antialiasing
+- parallelism
 - background (planes)
 - spheres
 - reflection
