@@ -56,7 +56,7 @@ func (v *Vec3) Normal(u *Vec3) *Vec3 {
 	return v.Div(u, u.Mag())
 }
 
-// Cross returns the vector cross product of u and v as a newly allocated vector.
+// Cross returns the cross product of u and v as a newly allocated vector.
 // (This function does not follow the math/big pattern because it wouldn't work if the result vector were also
 // one of the operands.)
 func (u *Vec3) Cross(v *Vec3) *Vec3 {
@@ -65,6 +65,11 @@ func (u *Vec3) Cross(v *Vec3) *Vec3 {
 		Y: u.Z*v.X - u.X*v.Z,
 		Z: u.X*v.Y - u.Y*v.X,
 	}
+}
+
+// Dot returns the dot product of u and v.
+func (u *Vec3) Dot(v *Vec3) float64 {
+	return u.X*v.X + u.Y*v.Y + u.Z*v.Z
 }
 
 func (v *Vec3) UnmarshalJSON(b []byte) error {

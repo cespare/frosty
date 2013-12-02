@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"image"
 )
 
@@ -17,18 +16,9 @@ func (r *Rendering) Render() *image.RGBA {
 	img := image.NewRGBA(image.Rect(0, 0, w, h))
 	scanner := NewPixelScanner(r.Camera, r.HPixels)
 	for scanner.Scan() {
-		x, y, v := scanner.Cur()
-		fmt.Printf("\033[01;34m>>>> x: %v\x1B[m\n", x)
-		fmt.Printf("\033[01;34m>>>> y: %v\x1B[m\n", y)
-		fmt.Printf("\033[01;34m>>>> v: %v\x1B[m\n", v)
-		fmt.Println("-------------------")
+		x, y, ray := scanner.Cur()
+		img.SetRGBA(x, y, r.Trace(ray))
 	}
-
-	//for x := 0; x < w; x++ {
-	//for y := 0; y < h; y++ {
-	//img.SetRGBA(x, y, color.RGBA{0, 0xff, 0, 0xff})
-	//}
-	//}
 	return img
 }
 
@@ -46,6 +36,7 @@ type PixelScanner struct {
 	origin            *Vec3
 	curX, curY        int
 	started, finished bool
+	vantage           *Vec3
 }
 
 func NewPixelScanner(camera *Camera, hPixels int) *PixelScanner {
@@ -61,7 +52,7 @@ func NewPixelScanner(camera *Camera, hPixels int) *PixelScanner {
 	// Across is the perpendicular to the camera ray and parallel to the xz plane => it is the cross product of
 	// the camera ray and the y axis.
 	yAxis := &Vec3{0, 1, 0}
-	cam := camera.Loc.Vec()
+	cam := camera.Loc.D.Copy()
 	a := cam.Cross(yAxis)
 	scanner.across = a.Normal(a)
 	// Down is perpendicular to the camera ray and Across.
@@ -70,9 +61,10 @@ func NewPixelScanner(camera *Camera, hPixels int) *PixelScanner {
 	scanner.down = d.Normal(d)
 	// Now we can easily compute the location of the image origin.
 	height := camera.Width * camera.Aspect
-	o := camera.Loc.V1.Copy()
+	o := camera.Loc.V.Copy()
 	scanner.origin = o.Add(o, V().Mul(d, -0.5*height)).Add(o, V().Mul(a, -0.5*camera.Width))
 	scanner.height = height
+	scanner.vantage = camera.Vantage()
 	return scanner
 }
 
@@ -96,11 +88,11 @@ func (s *PixelScanner) Scan() bool {
 	return true
 }
 
-func (s *PixelScanner) Cur() (x, y int, v *Vec3) {
+func (s *PixelScanner) Cur() (x, y int, r Ray) {
 	// The ray goes through the *center* of the pixel.
 	xDist := s.camera.Width*(float64(s.curX)/float64(s.hPixels)) + 0.5*s.pixelSize
 	yDist := s.height*(float64(s.curY)/float64(s.vPixels)) + 0.5*s.pixelSize
-	v = s.origin.Copy()
+	v := s.origin.Copy()
 	v.Add(v, V().Mul(s.across, xDist)).Add(v, V().Mul(s.down, yDist))
-	return s.curX, s.curY, v
+	return s.curX, s.curY, Ray{s.vantage, v.Sub(v, s.vantage)}
 }

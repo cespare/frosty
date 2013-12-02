@@ -29,27 +29,31 @@ func main() {
 		fatal("Cannot open scene file %s: %s\n", *sceneFile, err)
 	}
 
-	fmt.Println("Loading scene...")
+	fmt.Printf("Loading scene...")
 	scene := &Scene{}
 	decoder := json.NewDecoder(f)
 	if err := decoder.Decode(scene); err != nil {
-		fatal("Error loading scene: %s\n", err)
+		fatal("\nError loading scene: %s\n", err)
 	}
+	fmt.Println("done")
+
+	fmt.Printf("Initializing primitives...")
+	scene.Initialize()
 	fmt.Println("done")
 
 	if *debug {
 		spew.Dump(scene)
 	}
 
-	fmt.Println("Rendering...")
+	fmt.Printf("Rendering...")
 	rendering := &Rendering{scene, *hpixels}
 	img := rendering.Render()
 	f, err = os.Create(*out)
 	if err != nil {
-		fatal("Cannot open output file %s: %s\n", *out, err)
+		fatal("\nCannot open output file %s: %s\n", *out, err)
 	}
 	if err := png.Encode(f, img); err != nil {
-		fatal("Cannot write rendering as png: %s\n", err)
+		fatal("\nCannot write rendering as png: %s\n", err)
 	}
-	fmt.Printf("Done. Image rendered to %s\n", *out)
+	fmt.Printf("done. Image rendered to %s\n", *out)
 }

@@ -14,17 +14,6 @@ type Camera struct {
 	Aspect float64 // Aspect ratio: height / width
 }
 
-// A Light is a light source. White only for now.
-type Light struct {
-	Pos *Vec3
-}
-
-// A RPrism is a rectangular prism. It's defined by two vectors which are opposite corners.
-type RPrism struct {
-	Corner1, Corner2 *Vec3
-	Color            Color
-}
-
 // Vantage returns the vantage point for the camera. This is the origin of all the rays. It is situated behind
 // the center of the image plane at an appropriate distance
 func (c *Camera) Vantage() *Vec3 {
@@ -34,6 +23,6 @@ func (c *Camera) Vantage() *Vec3 {
 
 	// Construct the vector of magnitude d and the right direction to go from the image plane center to the
 	// vantage point.
-	v := c.Loc.Vec()
-	return v.Normal(v).Mul(v, -d).Add(c.Loc.V1, v)
+	v := c.Loc.D.Copy()
+	return v.Normal(v).Mul(v, -d).Add(c.Loc.V, v)
 }
