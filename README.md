@@ -12,8 +12,8 @@ Status: barely started.
   - ~~cubes~~
   - light source
   - shadows
-- antialiasing
-- parallelism
+- ~~antialiasing~~
+- ~~parallelism~~
 - background (planes)
 - spheres
 - reflection

@@ -2,6 +2,7 @@ package main
 
 import (
 	"image"
+	"sync"
 )
 
 type Rendering struct {
@@ -10,15 +11,24 @@ type Rendering struct {
 }
 
 // TODO: Also return a progress chan
-func (r *Rendering) Render() *image.RGBA {
+func (r *Rendering) Render(parallelism int) *image.RGBA {
 	w := r.HPixels
 	h := int(float64(w) * r.Camera.Aspect)
 	img := image.NewRGBA(image.Rect(0, 0, w, h))
 	scanner := NewPixelScanner(r.Camera, r.HPixels)
-	for scanner.Scan() {
-		x, y, ray := scanner.Cur()
-		img.SetRGBA(x, y, r.Trace(ray))
+
+	var wg sync.WaitGroup
+	wg.Add(parallelism)
+	pix := scanner.Scan()
+	for i := 0; i < parallelism; i++ {
+		go func() {
+			for result := range pix {
+				img.SetRGBA(result.x, result.y, r.Trace(result.ray))
+			}
+			wg.Done()
+		}()
 	}
+	wg.Wait()
 	return img
 }
 
@@ -32,11 +42,10 @@ type PixelScanner struct {
 	height    float64
 	// across and down are unit vectors parallel to the x and y axes, respectively, of the rendered image. They
 	// are both perpendicular to the camera ray. Across is parallel to the xz plane.
-	across, down      *Vec3
-	origin            *Vec3
-	curX, curY        int
-	started, finished bool
-	vantage           *Vec3
+	across, down *Vec3
+	origin       *Vec3
+	curX, curY   int
+	vantage      *Vec3
 }
 
 func NewPixelScanner(camera *Camera, hPixels int) *PixelScanner {
@@ -68,31 +77,32 @@ func NewPixelScanner(camera *Camera, hPixels int) *PixelScanner {
 	return scanner
 }
 
-func (s *PixelScanner) Scan() bool {
-	if s.finished {
-		return false
-	}
-	if !s.started {
-		s.started = true
-		return true
-	}
-	s.curX++
-	if s.curX >= s.hPixels {
-		s.curX = 0
-		s.curY++
-		if s.curY >= s.vPixels {
-			s.finished = true
-			return false
-		}
-	}
-	return true
+type scanResult struct {
+	x, y int
+	ray  Ray
 }
 
-func (s *PixelScanner) Cur() (x, y int, r Ray) {
-	// The ray goes through the *center* of the pixel.
-	xDist := s.camera.Width*(float64(s.curX)/float64(s.hPixels)) + 0.5*s.pixelSize
-	yDist := s.height*(float64(s.curY)/float64(s.vPixels)) + 0.5*s.pixelSize
-	v := s.origin.Copy()
-	v.Add(v, V().Mul(s.across, xDist)).Add(v, V().Mul(s.down, yDist))
-	return s.curX, s.curY, Ray{s.vantage, v.Sub(v, s.vantage)}
+func (s *PixelScanner) Scan() <-chan scanResult {
+	results := make(chan scanResult)
+	go func() {
+		for {
+			// The ray goes through the *center* of the pixel.
+			xDist := s.camera.Width*(float64(s.curX)/float64(s.hPixels)) + 0.5*s.pixelSize
+			yDist := s.height*(float64(s.curY)/float64(s.vPixels)) + 0.5*s.pixelSize
+			v := s.origin.Copy()
+			v.Add(v, V().Mul(s.across, xDist)).Add(v, V().Mul(s.down, yDist))
+			results <- scanResult{s.curX, s.curY, Ray{s.vantage, v.Sub(v, s.vantage)}}
+
+			s.curX++
+			if s.curX >= s.hPixels {
+				s.curX = 0
+				s.curY++
+				if s.curY >= s.vPixels {
+					close(results)
+					return
+				}
+			}
+		}
+	}()
+	return results
 }
