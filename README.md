@@ -12,9 +12,10 @@ Status: It makes a picture. Pre-pre-alpha.
   - ~~Cubes~~
   - Light source
   - Shadows
-  - Color clamping
+  - ~~Color clamping~~
 - ~~Antialiasing~~
 - ~~Parallelism~~
+- ~~Tone mapping~~ (naive version for now)
 - Background (planes)
 - Spheres
 - Reflection
@@ -23,7 +24,6 @@ Status: It makes a picture. Pre-pre-alpha.
 
 ## Ponies
 
-- Tone mapping
 - Depth of field
 - Motion blur
   - Stochastic temporal sampling

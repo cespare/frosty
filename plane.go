@@ -1,16 +1,12 @@
 package main
 
-import (
-	"image/color"
-)
-
 type Plane struct {
 	q      *Vec3 // A point on the plane
 	normal *Vec3 // A vector normal to the plane
-	color  color.RGBA
+	color  Color
 }
 
-func PlaneFromVertices(v1, v2, v3 *Vec3, color color.RGBA) *Plane {
+func PlaneFromVertices(v1, v2, v3 *Vec3, color Color) *Plane {
 	// Construct two vectors, v2v1 and v3v1; their cross product is normal to the plane.
 	l1 := V().Sub(v2, v1)
 	l2 := V().Sub(v3, v1)
@@ -29,7 +25,7 @@ func PlaneFromVertices(v1, v2, v3 *Vec3, color color.RGBA) *Plane {
 //       t = ---------------------
 //             ray.V · ray.D
 // If t < 0, then the intersection is behind the vantage point and doesn't count.
-func (p *Plane) Intersect(r Ray) (float64, color.RGBA, bool) {
+func (p *Plane) Intersect(r Ray) (float64, Color, bool) {
 	denom := r.V.Dot(r.D)
 	if denom == 0 {
 		// Ray is parallel to the plane

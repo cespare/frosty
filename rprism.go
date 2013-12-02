@@ -1,9 +1,6 @@
 package main
 
-import (
-	"image/color"
-	"math"
-)
+import "math"
 
 // A RPrism is a rectangular prism with sides parallel to the axis planes. It is defined by a point and
 // extends in the positive X, Y, and Z dimensions as given by Dim.
@@ -42,7 +39,7 @@ type rprismIntersectQ struct {
 
 // P(t) = r.V.X + t*r.D.X = x1
 // t = (x1 - r.V.X) / r.D.X
-func (p *RPrism) Intersect(r Ray) (float64, color.RGBA, bool) {
+func (p *RPrism) Intersect(r Ray) (float64, Color, bool) {
 	queries := []*rprismIntersectQ{
 		&rprismIntersectQ{
 			[3]float64{r.V.X, r.V.Y, r.V.Z},
@@ -77,7 +74,6 @@ func (p *RPrism) Intersect(r Ray) (float64, color.RGBA, bool) {
 	}
 	nearest := math.MaxFloat64
 	found := false
-	color := color.RGBA(p.Color)
 	for _, q := range queries {
 		d, ok := rprismIntersects(q)
 		if ok {
@@ -87,5 +83,5 @@ func (p *RPrism) Intersect(r Ray) (float64, color.RGBA, bool) {
 			}
 		}
 	}
-	return nearest, color, found
+	return nearest, p.Color, found
 }

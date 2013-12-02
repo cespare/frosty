@@ -2,20 +2,18 @@ package main
 
 import (
 	"fmt"
-	"image"
-	"image/color"
 )
 
-func Downsample(img image.Image, factor int) (*image.RGBA, error) {
-	width := img.Bounds().Dx()
-	height := img.Bounds().Dy()
+func Downsample(img *Image, factor int) (*Image, error) {
+	width := img.Width
+	height := img.Height
 	if width%factor != 0 || height%factor != 0 {
 		return nil, fmt.Errorf("Bad image dimensions for supersampling rate %d\n", factor)
 	}
 	dWidth := width / factor
 	dHeight := height / factor
-	dImg := image.NewRGBA(image.Rect(0, 0, dWidth, dHeight))
-	colors := []color.Color{}
+	dImg := NewImage(dWidth, dHeight)
+	colors := []Color{}
 	for dx := 0; dx < dWidth; dx++ {
 		for dy := 0; dy < dHeight; dy++ {
 			startX := dx * factor
@@ -32,22 +30,17 @@ func Downsample(img image.Image, factor int) (*image.RGBA, error) {
 	return dImg, nil
 }
 
-func ColorAvg(colors []color.Color) color.RGBA {
-	var r, g, b, a uint32
-	for _, col := range colors {
-		r2, g2, b2, a2 := col.RGBA()
-		// No worries about overflowing here because these numbers are in [0, 0xFFFF].
-		r += r2
-		g += g2
-		b += b2
-		a += a2
+func ColorAvg(colors []Color) Color {
+	var r, g, b float64
+	for _, c := range colors {
+		r += c.R
+		g += c.G
+		b += c.B
 	}
-	n := uint32(len(colors))
-	rgba := color.RGBA{
-		R: uint8((r / n) >> 8),
-		G: uint8((g / n) >> 8),
-		B: uint8((b / n) >> 8),
-		A: uint8((a / n) >> 8),
+	n := float64(len(colors))
+	return Color{
+		R: r / n,
+		G: g / n,
+		B: b / n,
 	}
-	return rgba
 }

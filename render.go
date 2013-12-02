@@ -1,7 +1,6 @@
 package main
 
 import (
-	"image"
 	"sync"
 )
 
@@ -11,10 +10,10 @@ type Rendering struct {
 }
 
 // TODO: Also return a progress chan
-func (r *Rendering) Render(parallelism int) *image.RGBA {
+func (r *Rendering) Render(parallelism int) *Image {
 	w := r.HPixels
 	h := int(float64(w) * r.Camera.Aspect)
-	img := image.NewRGBA(image.Rect(0, 0, w, h))
+	img := NewImage(w, h)
 	scanner := NewPixelScanner(r.Camera, r.HPixels)
 
 	var wg sync.WaitGroup
@@ -23,7 +22,7 @@ func (r *Rendering) Render(parallelism int) *image.RGBA {
 	for i := 0; i < parallelism; i++ {
 		go func() {
 			for result := range pix {
-				img.SetRGBA(result.x, result.y, r.Trace(result.ray))
+				img.Set(result.x, result.y, r.Trace(result.ray))
 			}
 			wg.Done()
 		}()

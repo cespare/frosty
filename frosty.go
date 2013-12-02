@@ -74,11 +74,15 @@ func main() {
 		fmt.Println("done")
 	}
 
+	fmt.Printf("Tone mapping image...")
+	outImg := img.ToneMap()
+	fmt.Println("done.")
+
 	f, err = os.Create(*out)
 	if err != nil {
 		fatal("Cannot open output file %s: %s\n", *out, err)
 	}
-	if err := png.Encode(f, img); err != nil {
+	if err := png.Encode(f, outImg); err != nil {
 		fatal("Cannot write rendering as png: %s\n", err)
 	}
 	fmt.Printf("Image rendered to %s\n", *out)

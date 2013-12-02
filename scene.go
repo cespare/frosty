@@ -1,9 +1,6 @@
 package main
 
-import (
-	"image/color"
-	"math"
-)
+import "math"
 
 type Scene struct {
 	Camera *Camera
@@ -25,7 +22,7 @@ type Light struct {
 type Object interface {
 	// If the ray intersects the object, return the distance to the nearest intersection (from ray.V, the eye
 	// point), the color at that point, and true. Otherwise ok is false.
-	Intersect(Ray) (nearest float64, color color.RGBA, ok bool)
+	Intersect(Ray) (nearest float64, color Color, ok bool)
 }
 
 // After loading the scene from file, load all objects into the objects slice.
@@ -35,10 +32,8 @@ func (s *Scene) Initialize() {
 	}
 }
 
-var Black = color.RGBA{0, 0, 0, 0xff}
-
 // Trace traces a single ray through the scene.
-func (s *Scene) Trace(r Ray) color.RGBA {
+func (s *Scene) Trace(r Ray) Color {
 	nearest := math.MaxFloat64
 	color := Black // Background
 	for _, obj := range s.objects {
