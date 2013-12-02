@@ -6,7 +6,7 @@
     },
     "width": 1,
     "haov": 90,
-    "aspect": 0.75
+    "aspect": 1
   },
   "lights": [
     {"pos": [5, 10, 5]}

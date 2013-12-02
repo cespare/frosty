@@ -8,7 +8,7 @@ import (
 // plane, a horizontal angle of view, and an aspect ratio. For now, there's no rotation specified so the top
 // and bottom edges of the image plane are always parallel to the xz plane.
 type Camera struct {
-	Loc    *Ray    // Location; Loc.V1 is the center of the image plane
+	Loc    Ray     // Location; Loc.V1 is the center of the image plane
 	Width  float64 // Width of the image plane
 	Haov   Rad     // Horizontal angle of view in degrees
 	Aspect float64 // Aspect ratio: height / width
@@ -35,7 +35,5 @@ func (c *Camera) Vantage() *Vec3 {
 	// Construct the vector of magnitude d and the right direction to go from the image plane center to the
 	// vantage point.
 	v := c.Loc.Vec()
-	v.Normal(v)
-	v.Mul(v, -d)
-	return v.Add(c.Loc.V1, v)
+	return v.Normal(v).Mul(v, -d).Add(c.Loc.V1, v)
 }

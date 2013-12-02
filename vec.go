@@ -14,6 +14,8 @@ type Vec3 struct {
 // V returns a newly initialized zero vector.
 func V() *Vec3 { return &Vec3{} }
 
+func (v *Vec3) Copy() *Vec3 { return &Vec3{v.X, v.Y, v.Z} }
+
 func (w *Vec3) Add(u, v *Vec3) *Vec3 {
 	w.X = u.X + v.X
 	w.Y = u.Y + v.Y
@@ -52,6 +54,17 @@ func (v *Vec3) Mag() float64 {
 // Normal sets v to be the normalized (unit) vector of u and returns v.
 func (v *Vec3) Normal(u *Vec3) *Vec3 {
 	return v.Div(u, u.Mag())
+}
+
+// Cross returns the vector cross product of u and v as a newly allocated vector.
+// (This function does not follow the math/big pattern because it wouldn't work if the result vector were also
+// one of the operands.)
+func (u *Vec3) Cross(v *Vec3) *Vec3 {
+	return &Vec3{
+		X: u.Y*v.Z - u.Z*v.Y,
+		Y: u.Z*v.X - u.X*v.Z,
+		Z: u.X*v.Y - u.Y*v.X,
+	}
 }
 
 func (v *Vec3) UnmarshalJSON(b []byte) error {
