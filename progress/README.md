@@ -4,3 +4,4 @@
 2. Supersampling antialiasing
 3. Changed perspective
 4. Diffuse lighting
+5. Planes
