@@ -1,10 +1,17 @@
 package main
 
-import "math"
+import (
+	"fmt"
+	"math"
+)
 
 type Scene struct {
-	Camera *Camera
-	Lights []*Light
+	Camera  *Camera
+	Ambient Color     // Ambient light
+	PLights []*PLight // Point lights
+
+	// Materials
+	Materials map[string]*Material
 
 	// Some kinds of objects have convenient representations for input.
 	RPrisms []*RPrism
@@ -13,35 +20,80 @@ type Scene struct {
 	objects []Object
 }
 
-// A Light is a light source. White only for now.
-type Light struct {
-	Pos *Vec3
-}
+// Don't consider it an intersection if the distance is less than this cutoff.
+const minDistance = 0.0001
 
 // An Object is any object in the scene.
 type Object interface {
 	// If the ray intersects the object, return the distance to the nearest intersection (from ray.V, the eye
-	// point), the color at that point, and true. Otherwise ok is false.
-	Intersect(Ray) (nearest float64, color Color, ok bool)
+	// point), the Material at that point, the intersection point, the normal vector at that point, and true.
+	// Otherwise ok is false.
+	Intersect(Ray) (d float64, mat *Material, p, normal *Vec3, ok bool)
 }
 
 // After loading the scene from file, load all objects into the objects slice.
-func (s *Scene) Initialize() {
+func (s *Scene) Initialize() error {
 	for _, rp := range s.RPrisms {
+		m, ok := s.Materials[rp.MatName]
+		if !ok {
+			return fmt.Errorf("Cannot find referenced material %s", rp.MatName)
+		}
+		rp.Mat = m
 		s.objects = append(s.objects, rp)
 	}
+	return nil
 }
 
 // Trace traces a single ray through the scene.
 func (s *Scene) Trace(r Ray) Color {
 	nearest := math.MaxFloat64
-	color := Black // Background
+	found := false
+	var (
+		mat  *Material
+		p    *Vec3
+		norm *Vec3
+	)
 	for _, obj := range s.objects {
-		d, c, ok := obj.Intersect(r)
+		d, m, pt, n, ok := obj.Intersect(r)
 		if ok && d < nearest {
+			found = true
 			nearest = d
-			color = c
+			mat = m
+			p = pt
+			norm = n
 		}
+	}
+	color := Black
+	if !found {
+		return color
+	}
+	// Ambient term
+	la := s.Ambient.Mul(mat.Color)     // La, the ambient light * ambient object color
+	color = color.Add(la.MulS(mat.Ka)) // ambient term is ka * La
+
+	// For further calculations it's nice to normalize all vectors.
+	norm.Normalize(norm)
+	// For each light, compute diffuse and specular components
+lights:
+	for _, light := range s.PLights {
+		// Compute the shadow ray
+		shadow := light.Pos.Copy()
+		shadow.Sub(shadow, p)
+		for _, obj := range s.objects {
+			if _, _, _, _, ok := obj.Intersect(Ray{p, shadow}); ok {
+				// An object blocks the shadow raw (i.e., this point is in shadow), so skip the specular and diffuse
+				// terms for this light.
+				continue lights
+			}
+		}
+		d := shadow.Mag() // Distance from the point to the light
+		// Point lights fall off according to the inverse square law
+		intensity := light.Color.MulS(1.0 / (d * d))
+		// For the diffuse term, Li is the diffuse object color * light source
+		li := intensity.Mul(mat.Color)
+		diffuse := shadow.Dot(norm)
+		li = li.MulS(diffuse)
+		color = color.Add(li.MulS(mat.Kd))
 	}
 	return color
 }

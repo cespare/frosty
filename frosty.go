@@ -1,10 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"image/png"
+	"io/ioutil"
 	"os"
 
 	"github.com/cespare/gomaxprocs"
@@ -14,6 +16,17 @@ import (
 func fatal(format string, args ...interface{}) {
 	fmt.Printf(format, args...)
 	os.Exit(1)
+}
+
+func jsonError(raw []byte, err error) error {
+	e, ok := err.(*json.SyntaxError)
+	if !ok {
+		return err
+	}
+	first := raw[:e.Offset]
+	newlines := bytes.Count(first, []byte{'\n'})
+	last := bytes.LastIndex(first, []byte{'\n'})
+	return fmt.Errorf("JSON error at line %d, column %d: %s", newlines+1, len(first)-last-1, e)
 }
 
 func main() {
@@ -39,21 +52,22 @@ func main() {
 		fatal("Bad value for parallelism (should be at least one): %d\n", *parallelism)
 	}
 
-	f, err := os.Open(*sceneFile)
+	raw, err := ioutil.ReadFile(*sceneFile)
 	if err != nil {
 		fatal("Cannot open scene file %s: %s\n", *sceneFile, err)
 	}
 
 	fmt.Printf("Loading scene...")
 	scene := &Scene{}
-	decoder := json.NewDecoder(f)
-	if err := decoder.Decode(scene); err != nil {
-		fatal("\nError loading scene: %s\n", err)
+	if err := json.Unmarshal(raw, scene); err != nil {
+		fatal("\nError loading scene: %s\n", jsonError(raw, err))
 	}
 	fmt.Println("done")
 
 	fmt.Printf("Initializing primitives...")
-	scene.Initialize()
+	if err := scene.Initialize(); err != nil {
+		fmt.Printf("\nError: %s\n", err)
+	}
 	fmt.Println("done")
 
 	if *debug {
@@ -78,7 +92,7 @@ func main() {
 	outImg := img.ToneMap()
 	fmt.Println("done.")
 
-	f, err = os.Create(*out)
+	f, err := os.Create(*out)
 	if err != nil {
 		fatal("Cannot open output file %s: %s\n", *out, err)
 	}

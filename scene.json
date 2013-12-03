@@ -1,26 +1,48 @@
 {
   "camera": {
     "loc": {
-      "v": [6, 1.5, 7],
-      "d": [-0.8, -0.5, -1]
+      "v": [5.5, 1.3, 6.5],
+      "d": [-0.8, -0.6, -1]
     },
     "width": 1,
     "haov": 75,
     "aspect": 1
   },
-  "lights": [
-    {"pos": [5, 10, 5]}
+  "ambient": "#222",
+  "plights": [
+    {
+      "pos": [5, 3, 5],
+      "color": "#FFF"
+    }
   ],
+  "materials": {
+    "red-1": {
+      "color": "#F00",
+      "specular": "#FFF",
+      "ka": 1,
+      "kd": 1,
+      "ks": 0,
+      "alpha": 1
+    },
+    "green-1": {
+      "color": "#0F0",
+      "specular": "#FFF",
+      "ka": 1,
+      "kd": 1,
+      "ks": 0,
+      "alpha": 1
+    }
+  },
   "rprisms": [
     {
       "pos": [3, 0, 5],
       "dim": [1, 1, 1],
-      "color": "#00FF00"
+      "mat": "green-1"
     },
     {
-      "pos": [5, 0, 5],
+      "pos": [4.5, 0, 5],
       "dim": [1, 1, 1],
-      "color": "#FF0000"
+      "mat": "red-1"
     }
   ]
 }

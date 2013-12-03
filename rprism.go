@@ -5,9 +5,10 @@ import "math"
 // A RPrism is a rectangular prism with sides parallel to the axis planes. It is defined by a point and
 // extends in the positive X, Y, and Z dimensions as given by Dim.
 type RPrism struct {
-	Pos   *Vec3      // The corner with smallest X, Y, Z
-	Dim   [3]float64 // X, Y, Z
-	Color Color
+	Pos     *Vec3      // The corner with smallest X, Y, Z
+	Dim     [3]float64 // X, Y, Z
+	Mat     *Material  `json:"-"`
+	MatName string     `json:"mat"`
 }
 
 // a, b, and c are dimensions (i.e. each is one of X, Y, Z)
@@ -35,53 +36,67 @@ func rprismIntersects(q *rprismIntersectQ) (float64, bool) {
 type rprismIntersectQ struct {
 	v, d                            [3]float64
 	bcPlane, minB, maxB, minC, maxC float64
+	normal                          *Vec3
 }
 
 // P(t) = r.V.X + t*r.D.X = x1
 // t = (x1 - r.V.X) / r.D.X
-func (p *RPrism) Intersect(r Ray) (float64, Color, bool) {
+func (p *RPrism) Intersect(r Ray) (float64, *Material, *Vec3, *Vec3, bool) {
 	queries := []*rprismIntersectQ{
 		&rprismIntersectQ{
 			[3]float64{r.V.X, r.V.Y, r.V.Z},
 			[3]float64{r.D.X, r.D.Y, r.D.Z},
 			p.Pos.X, p.Pos.Y, p.Pos.Y + p.Dim[1], p.Pos.Z, p.Pos.Z + p.Dim[2],
+			&Vec3{-1, 0, 0},
 		},
 		&rprismIntersectQ{
 			[3]float64{r.V.X, r.V.Y, r.V.Z},
 			[3]float64{r.D.X, r.D.Y, r.D.Z},
 			p.Pos.X + p.Dim[0], p.Pos.Y, p.Pos.Y + p.Dim[1], p.Pos.Z, p.Pos.Z + p.Dim[2],
+			&Vec3{1, 0, 0},
 		},
 		&rprismIntersectQ{
 			[3]float64{r.V.Y, r.V.Z, r.V.X},
 			[3]float64{r.D.Y, r.D.Z, r.D.X},
 			p.Pos.Y, p.Pos.Z, p.Pos.Z + p.Dim[2], p.Pos.X, p.Pos.X + p.Dim[0],
+			&Vec3{0, -1, 0},
 		},
 		&rprismIntersectQ{
 			[3]float64{r.V.Y, r.V.Z, r.V.X},
 			[3]float64{r.D.Y, r.D.Z, r.D.X},
 			p.Pos.Y + p.Dim[1], p.Pos.Z, p.Pos.Z + p.Dim[2], p.Pos.X, p.Pos.X + p.Dim[0],
+			&Vec3{0, 1, 0},
 		},
 		&rprismIntersectQ{
 			[3]float64{r.V.Z, r.V.X, r.V.Y},
 			[3]float64{r.D.Z, r.D.X, r.D.Y},
 			p.Pos.Z, p.Pos.X, p.Pos.X + p.Dim[0], p.Pos.Y, p.Pos.Y + p.Dim[1],
+			&Vec3{0, 0, -1},
 		},
 		&rprismIntersectQ{
 			[3]float64{r.V.Z, r.V.X, r.V.Y},
 			[3]float64{r.D.Z, r.D.X, r.D.Y},
 			p.Pos.Z + p.Dim[2], p.Pos.X, p.Pos.X + p.Dim[0], p.Pos.Y, p.Pos.Y + p.Dim[1],
+			&Vec3{0, 0, 1},
 		},
 	}
 	nearest := math.MaxFloat64
 	found := false
+	var normal *Vec3
 	for _, q := range queries {
 		d, ok := rprismIntersects(q)
 		if ok {
-			found = true
-			if d < nearest {
+			if d > minDistance && d < nearest {
+				found = true
 				nearest = d
+				normal = q.normal
 			}
 		}
 	}
-	return nearest, p.Color, found
+
+	if !found {
+		return 0, nil, nil, nil, false
+	}
+	pt := r.At(nearest)
+	return nearest, p.Mat, pt, normal, found
 }

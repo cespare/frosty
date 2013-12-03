@@ -16,7 +16,17 @@ type Color struct {
 
 var (
 	Black = Color{0, 0, 0}
+	Pink = Color{1, 0, 0.5}
 )
+
+// Add adds two colors
+func (c1 Color) Add(c2 Color) Color { return Color{c1.R + c2.R, c1.G + c2.G, c1.B + c2.B} }
+
+// Mul multiplies two colors component-wise
+func (c1 Color) Mul(c2 Color) Color { return Color{c1.R * c2.R, c1.G * c2.G, c1.B * c2.B} }
+
+// MulS multiplies a color by a scalar
+func (c1 Color) MulS(f float64) Color { return Color{c1.R * f, c1.G * f, c1.B * f} }
 
 func clamp(f float64) float64 {
 	switch {
@@ -54,7 +64,7 @@ func (c *Color) UnmarshalJSON(b []byte) error {
 	return nil
 }
 
-// ParseHexColor parses a CSS-style hex color (e.g. #123abc, #fff)
+// ParseHexColor parses a CSS-style hex color (e.g. #123abc, #fff) to a Color with values in [0, 1].
 func ParseHexColor(c string) (Color, error) {
 	if strings.HasPrefix(c, "#") {
 		c = c[1:]

@@ -4,3 +4,9 @@ package main
 type Ray struct {
 	V, D *Vec3
 }
+
+// Return the point p at distance d along r from V.
+func (r Ray) At(d float64) *Vec3 {
+	p := V().Mul(r.D, d)
+	return p.Add(p, r.V)
+}

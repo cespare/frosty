@@ -38,7 +38,4 @@ func (p *Plane) Intersect(r Ray) (float64, Color, bool) {
 		return 0, p.color, false
 	}
 	return t, p.color, true
-	// Intersection point:
-	//v := V().Mul(r.D, t)
-	//v.Add(v, r.V)
 }

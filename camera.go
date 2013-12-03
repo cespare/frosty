@@ -24,5 +24,5 @@ func (c *Camera) Vantage() *Vec3 {
 	// Construct the vector of magnitude d and the right direction to go from the image plane center to the
 	// vantage point.
 	v := c.Loc.D.Copy()
-	return v.Normal(v).Mul(v, -d).Add(c.Loc.V, v)
+	return v.Normalize(v).Mul(v, -d).Add(c.Loc.V, v)
 }

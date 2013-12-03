@@ -10,12 +10,14 @@ Status: It makes a picture. Pre-pre-alpha.
 
 - MVP:
   - ~~Cubes~~
-  - Light source
-  - Shadows
+  - ~~Light source~~
+  - ~~Shadows~~
+  - ~~Diffuse lighting~~
   - ~~Color clamping~~
 - ~~Antialiasing~~
 - ~~Parallelism~~
 - ~~Tone mapping~~ (naive version for now)
+- Specular highlights
 - Background (planes)
 - Spheres
 - Reflection

@@ -62,11 +62,11 @@ func NewPixelScanner(camera *Camera, hPixels int) *PixelScanner {
 	yAxis := &Vec3{0, 1, 0}
 	cam := camera.Loc.D.Copy()
 	a := cam.Cross(yAxis)
-	scanner.across = a.Normal(a)
+	scanner.across = a.Normalize(a)
 	// Down is perpendicular to the camera ray and Across.
 	d := V()
 	d = cam.Cross(a)
-	scanner.down = d.Normal(d)
+	scanner.down = d.Normalize(d)
 	// Now we can easily compute the location of the image origin.
 	height := camera.Width * camera.Aspect
 	o := camera.Loc.V.Copy()

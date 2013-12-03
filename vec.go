@@ -51,8 +51,8 @@ func (v *Vec3) Mag() float64 {
 	return math.Sqrt(v.X*v.X + v.Y*v.Y + v.Z*v.Z)
 }
 
-// Normal sets v to be the normalized (unit) vector of u and returns v.
-func (v *Vec3) Normal(u *Vec3) *Vec3 {
+// Normalize sets v to be the normalized (unit) vector of u and returns v.
+func (v *Vec3) Normalize(u *Vec3) *Vec3 {
 	return v.Div(u, u.Mag())
 }
 
