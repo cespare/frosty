@@ -40,6 +40,10 @@ func (i *Image) ToneMap() *image.RGBA {
 	var max float64
 	for j := 0; j < i.Width*i.Height; j++ {
 		c := i.Pix[j]
+		if c.R < 0 || c.G < 0 || c.B < 0 {
+			dbg(c)
+			panic("Negative color values")
+		}
 		if c.R > max {
 			max = c.R
 		}

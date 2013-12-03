@@ -17,8 +17,8 @@ Status: It makes a picture. Pre-pre-alpha.
 - ~~Antialiasing~~
 - ~~Parallelism~~
 - ~~Tone mapping~~ (naive version for now)
+- ~~Background (planes)~~
 - Specular highlights
-- Background (planes)
 - Spheres
 - Reflection
 - Refraction
@@ -41,7 +41,7 @@ Status: It makes a picture. Pre-pre-alpha.
 - Import models
   - STL?
 - Photon mapping (caustics)
-- Spatial subdivision (octrees, BSP)
+- Spatial subdivision (octrees, BSP, k-d trees)
 
 ## Links
 

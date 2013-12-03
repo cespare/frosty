@@ -15,8 +15,9 @@ type Color struct {
 }
 
 var (
-	Black = Color{0, 0, 0}
-	Pink = Color{1, 0, 0.5}
+	Black  = Color{0, 0, 0}
+	Pink   = Color{1, 0, 0.5}
+	Yellow = Color{0.5, 0.5, 0}
 )
 
 // Add adds two colors

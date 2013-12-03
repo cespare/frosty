@@ -8,6 +8,7 @@ import (
 	"image/png"
 	"io/ioutil"
 	"os"
+	"regexp"
 
 	"github.com/cespare/gomaxprocs"
 	"github.com/davecgh/go-spew/spew"
@@ -28,6 +29,20 @@ func jsonError(raw []byte, err error) error {
 	last := bytes.LastIndex(first, []byte{'\n'})
 	return fmt.Errorf("JSON error at line %d, column %d: %s", newlines+1, len(first)-last-1, e)
 }
+
+var jsonCommentRegex = regexp.MustCompile(`(?m)^\s+(//|#).*$`)
+
+// Very quick and dirty way to filter out comments without disturbing offset/newline counts.
+// Only whole-line comments are allowed.
+func filterJSONComments(raw []byte) {
+	for _, comment := range jsonCommentRegex.FindAllIndex(raw, -1) {
+		for i := comment[0]; i < comment[1]; i++ {
+			raw[i] = ' '
+		}
+	}
+}
+
+func dbg(i ...interface{}) { spew.Dump(i...) }
 
 func main() {
 	gomaxprocs.SetToNumCPU()
@@ -56,6 +71,7 @@ func main() {
 	if err != nil {
 		fatal("Cannot open scene file %s: %s\n", *sceneFile, err)
 	}
+	filterJSONComments(raw)
 
 	fmt.Printf("Loading scene...")
 	scene := &Scene{}

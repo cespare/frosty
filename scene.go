@@ -1,9 +1,6 @@
 package main
 
-import (
-	"fmt"
-	"math"
-)
+import "math"
 
 type Scene struct {
 	Camera  *Camera
@@ -15,6 +12,7 @@ type Scene struct {
 
 	// Some kinds of objects have convenient representations for input.
 	RPrisms []*RPrism
+	Planes  []*PlaneObject
 
 	// The computed list of objects over which the tracer iterates.
 	objects []Object
@@ -25,6 +23,7 @@ const minDistance = 0.0001
 
 // An Object is any object in the scene.
 type Object interface {
+	Initialize(map[string]*Material) error
 	// If the ray intersects the object, return the distance to the nearest intersection (from ray.V, the eye
 	// point), the Material at that point, the intersection point, the normal vector at that point, and true.
 	// Otherwise ok is false.
@@ -34,18 +33,21 @@ type Object interface {
 // After loading the scene from file, load all objects into the objects slice.
 func (s *Scene) Initialize() error {
 	for _, rp := range s.RPrisms {
-		m, ok := s.Materials[rp.MatName]
-		if !ok {
-			return fmt.Errorf("Cannot find referenced material %s", rp.MatName)
-		}
-		rp.Mat = m
 		s.objects = append(s.objects, rp)
+	}
+	for _, p := range s.Planes {
+		s.objects = append(s.objects, p)
+	}
+	for _, o := range s.objects {
+		if err := o.Initialize(s.Materials); err != nil {
+			return err
+		}
 	}
 	return nil
 }
 
 // Trace traces a single ray through the scene.
-func (s *Scene) Trace(r Ray) Color {
+func (s *Scene) Trace(r Ray) (c Color) {
 	nearest := math.MaxFloat64
 	found := false
 	var (
@@ -79,14 +81,21 @@ lights:
 		// Compute the shadow ray
 		shadow := light.Pos.Copy()
 		shadow.Sub(shadow, p)
-		for _, obj := range s.objects {
-			if _, _, _, _, ok := obj.Intersect(Ray{p, shadow}); ok {
-				// An object blocks the shadow raw (i.e., this point is in shadow), so skip the specular and diffuse
-				// terms for this light.
-				continue lights
-			}
+		if shadow.Dot(norm) < 0 {
+			// Light is behind the surface
+			continue
 		}
 		d := shadow.Mag() // Distance from the point to the light
+		shadow.Normalize(shadow)
+		for _, obj := range s.objects {
+			if d2, _, _, _, ok := obj.Intersect(Ray{p, shadow}); ok {
+				if d2 < d-minDistance {
+					// An object blocks the shadow raw (i.e., this point is in shadow), so skip the specular and diffuse
+					// terms for this light.
+					continue lights
+				}
+			}
+		}
 		// Point lights fall off according to the inverse square law
 		intensity := light.Color.MulS(1.0 / (d * d))
 		// For the diffuse term, Li is the diffuse object color * light source
