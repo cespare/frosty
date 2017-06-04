@@ -57,8 +57,8 @@ func (v *Vec3) Normalize(u *Vec3) *Vec3 {
 }
 
 // Cross returns the cross product of u and v as a newly allocated vector.
-// (This function does not follow the math/big pattern because it wouldn't work if the result vector were also
-// one of the operands.)
+// (This function does not follow the math/big pattern because it wouldn't work
+// if the result vector were also one of the operands.)
 func (u *Vec3) Cross(v *Vec3) *Vec3 {
 	return &Vec3{
 		X: u.Y*v.Z - u.Z*v.Y,

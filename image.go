@@ -5,8 +5,8 @@ import (
 	"image/color"
 )
 
-// An Image is a rectangular grid of Colors. I'm not using the image.Image interface for now because my needs
-// are a little different.
+// An Image is a rectangular grid of Colors. I'm not using the image.Image
+// interface for now because my needs are a little different.
 type Image struct {
 	Width, Height int
 	Pix           []Color
@@ -34,14 +34,14 @@ func (i *Image) Set(x, y int, c Color) {
 	i.Pix[y*i.Width+x] = c
 }
 
-// ToneMap scales down the range of colors to 32-bit RGBA. Right now it uses a simplistic heuristic: it just
-// scales the values linearly such that the most intense channel value is 0xFF.
+// ToneMap scales down the range of colors to 32-bit RGBA. Right now it uses a
+// simplistic heuristic: it just scales the values linearly such that the most
+// intense channel value is 0xFF.
 func (i *Image) ToneMap() *image.RGBA {
 	var max float64
 	for j := 0; j < i.Width*i.Height; j++ {
 		c := i.Pix[j]
 		if c.R < 0 || c.G < 0 || c.B < 0 {
-			dbg(c)
 			panic("Negative color values")
 		}
 		if c.R > max {

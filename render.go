@@ -31,16 +31,17 @@ func (r *Rendering) Render(parallelism int) *Image {
 	return img
 }
 
-// A PixelScanner yields each point in the rendered image along with a vector to represent its position on the
-// image plane.
+// A PixelScanner yields each point in the rendered image along with a vector to
+// represent its position on the image plane.
 type PixelScanner struct {
 	hPixels, vPixels int
 	camera           *Camera
 
 	pixelSize float64
 	height    float64
-	// across and down are unit vectors parallel to the x and y axes, respectively, of the rendered image. They
-	// are both perpendicular to the camera ray. Across is parallel to the xz plane.
+	// across and down are unit vectors parallel to the x and y axes,
+	// respectively, of the rendered image. They are both perpendicular to
+	// the camera ray. Across is parallel to the xz plane.
 	across, down *Vec3
 	origin       *Vec3
 	curX, curY   int
@@ -57,8 +58,8 @@ func NewPixelScanner(camera *Camera, hPixels int) *PixelScanner {
 	// Compute the size of a pixel.
 	scanner.pixelSize = camera.Width / float64(hPixels)
 	// Compute useful vectors.
-	// Across is the perpendicular to the camera ray and parallel to the xz plane => it is the cross product of
-	// the camera ray and the y axis.
+	// Across is the perpendicular to the camera ray and parallel to the xz
+	// plane => it is the cross product of the camera ray and the y axis.
 	yAxis := &Vec3{0, 1, 0}
 	cam := camera.Loc.D.Copy()
 	a := cam.Cross(yAxis)

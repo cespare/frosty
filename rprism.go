@@ -5,10 +5,11 @@ import (
 	"math"
 )
 
-// A RPrism is a rectangular prism with sides parallel to the axis planes. It is defined by a point and
-// extends in the positive X, Y, and Z dimensions as given by Dim.
+// An RPrism is a rectangular prism with sides parallel to the axis planes.
+// It is defined by a point and extends in the positive X, Y, and Z dimensions
+// as given by Dim.
 type RPrism struct {
-	Pos     *Vec3      // The corner with smallest X, Y, Z
+	Pos     *Vec3      // corner with smallest X, Y, Z
 	Dim     [3]float64 // X, Y, Z
 	Mat     *Material  `json:"-"`
 	MatName string     `json:"mat"`
@@ -17,7 +18,7 @@ type RPrism struct {
 func (p *RPrism) Initialize(materials map[string]*Material) error {
 	m, ok := materials[p.MatName]
 	if !ok {
-		return fmt.Errorf("Cannot find material %s", p.MatName)
+		return fmt.Errorf("cannot find material %s", p.MatName)
 	}
 	p.Mat = m
 	return nil

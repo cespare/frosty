@@ -5,10 +5,10 @@ import (
 	"math"
 )
 
-// Radians
+// A Rad is an angular measurement of radians.
 type Rad float64
 
-// Unmarshal from degrees
+// UnmarshalJSON unmarshals from JSON text specifying a quantity in degrees.
 func (r *Rad) UnmarshalJSON(b []byte) error {
 	var f float64
 	if err := json.Unmarshal(b, &f); err != nil {

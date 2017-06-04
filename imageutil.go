@@ -8,7 +8,7 @@ func Downsample(img *Image, factor int) (*Image, error) {
 	width := img.Width
 	height := img.Height
 	if width%factor != 0 || height%factor != 0 {
-		return nil, fmt.Errorf("Bad image dimensions for supersampling rate %d\n", factor)
+		return nil, fmt.Errorf("bad image dimensions for supersampling rate %d", factor)
 	}
 	dWidth := width / factor
 	dHeight := height / factor

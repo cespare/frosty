@@ -34,6 +34,8 @@ func (p *PlaneObject) Initialize(materials map[string]*Material) error {
 	return nil
 }
 
+// Intersect determines the intersection of r with p.
+//
 // A point p is on the plane if normal·(p - q) = 0.
 // Points on the ray are of the form P(t) = ray.V + t*ray.D for t >= 0.
 // Thus intersections have the solution
@@ -55,8 +57,9 @@ func (p *PlaneObject) Intersect(r Ray) (float64, *Material, *Vec3, *Vec3, bool) 
 	}
 	normal := p.normal
 	if denom > 0 {
-		// If the ray is less than 90 degrees from the normal line (dot product > 0), we're hitting the 'back' of
-		// the plane and we want to return the opposite normal.
+		// If the ray is less than 90 degrees from the normal line
+		// (dot product > 0), we're hitting the 'back' of the plane
+		// and we want to return the opposite normal.
 		normal = p.normal.Copy()
 		normal.Mul(normal, -1)
 	}
