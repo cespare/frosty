@@ -1,6 +1,8 @@
 package main
 
-import "math"
+import (
+	"math"
+)
 
 type Scene struct {
 	Camera  *Camera
@@ -28,7 +30,7 @@ type Object interface {
 	// intersection (from ray.V, the eye point), the Material at that point,
 	// the intersection point, the normal vector at that point, and true.
 	// Otherwise ok is false.
-	Intersect(Ray) (d float64, mat *Material, p, normal *Vec3, ok bool)
+	Intersect(Ray) (d float64, mat *Material, p, normal Vec3, ok bool)
 }
 
 // After loading the scene from file, load all objects into the objects slice.
@@ -53,8 +55,8 @@ func (s *Scene) Trace(r Ray) (c Color) {
 	found := false
 	var (
 		mat  *Material
-		p    *Vec3
-		norm *Vec3
+		p    Vec3
+		norm Vec3
 	)
 	for _, obj := range s.objects {
 		d, m, pt, n, ok := obj.Intersect(r)
@@ -75,19 +77,19 @@ func (s *Scene) Trace(r Ray) (c Color) {
 	color = color.Add(la.MulS(mat.Ka)) // ambient term is ka * La
 
 	// For further calculations it's nice to normalize all vectors.
-	norm.Normalize(norm)
+	norm = norm.Normalize()
 	// For each light, compute diffuse and specular components
 lights:
 	for _, light := range s.PLights {
 		// Compute the shadow ray
-		shadow := light.Pos.Copy()
-		shadow.Sub(shadow, p)
+		shadow := light.Pos
+		shadow = shadow.Sub(p)
 		if shadow.Dot(norm) < 0 {
-			// Light is behind the surface
+			// Light is behind the surface.
 			continue
 		}
-		d := shadow.Mag() // Distance from the point to the light
-		shadow.Normalize(shadow)
+		d := shadow.Mag() // distance from the point to the light
+		shadow = shadow.Normalize()
 		for _, obj := range s.objects {
 			if d2, _, _, _, ok := obj.Intersect(Ray{p, shadow}); ok {
 				if d2 < d-minDistance {

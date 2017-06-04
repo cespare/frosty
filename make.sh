@@ -1,3 +1,9 @@
 #!/bin/sh
 
-go build -o frosty && ./frosty -debug -hpixels 1200 -out out.png && open out.png
+set -eu -o pipefail
+
+go build -o frosty
+time ./frosty \
+  -debug \
+  -hpixels 1200 \
+  -out out.png

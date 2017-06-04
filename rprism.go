@@ -9,7 +9,7 @@ import (
 // It is defined by a point and extends in the positive X, Y, and Z dimensions
 // as given by Dim.
 type RPrism struct {
-	Pos     *Vec3      // corner with smallest X, Y, Z
+	Pos     Vec3       // corner with smallest X, Y, Z
 	Dim     [3]float64 // X, Y, Z
 	Mat     *Material  `json:"-"`
 	MatName string     `json:"mat"`
@@ -49,53 +49,53 @@ func rprismIntersects(q *rprismIntersectQ) (float64, bool) {
 type rprismIntersectQ struct {
 	v, d                            [3]float64
 	bcPlane, minB, maxB, minC, maxC float64
-	normal                          *Vec3
+	normal                          Vec3
 }
 
 // P(t) = r.V.X + t*r.D.X = x1
 // t = (x1 - r.V.X) / r.D.X
-func (p *RPrism) Intersect(r Ray) (float64, *Material, *Vec3, *Vec3, bool) {
+func (p *RPrism) Intersect(r Ray) (float64, *Material, Vec3, Vec3, bool) {
 	queries := []*rprismIntersectQ{
 		{
 			[3]float64{r.V.X, r.V.Y, r.V.Z},
 			[3]float64{r.D.X, r.D.Y, r.D.Z},
 			p.Pos.X, p.Pos.Y, p.Pos.Y + p.Dim[1], p.Pos.Z, p.Pos.Z + p.Dim[2],
-			&Vec3{-1, 0, 0},
+			Vec3{-1, 0, 0},
 		},
 		{
 			[3]float64{r.V.X, r.V.Y, r.V.Z},
 			[3]float64{r.D.X, r.D.Y, r.D.Z},
 			p.Pos.X + p.Dim[0], p.Pos.Y, p.Pos.Y + p.Dim[1], p.Pos.Z, p.Pos.Z + p.Dim[2],
-			&Vec3{1, 0, 0},
+			Vec3{1, 0, 0},
 		},
 		{
 			[3]float64{r.V.Y, r.V.Z, r.V.X},
 			[3]float64{r.D.Y, r.D.Z, r.D.X},
 			p.Pos.Y, p.Pos.Z, p.Pos.Z + p.Dim[2], p.Pos.X, p.Pos.X + p.Dim[0],
-			&Vec3{0, -1, 0},
+			Vec3{0, -1, 0},
 		},
 		{
 			[3]float64{r.V.Y, r.V.Z, r.V.X},
 			[3]float64{r.D.Y, r.D.Z, r.D.X},
 			p.Pos.Y + p.Dim[1], p.Pos.Z, p.Pos.Z + p.Dim[2], p.Pos.X, p.Pos.X + p.Dim[0],
-			&Vec3{0, 1, 0},
+			Vec3{0, 1, 0},
 		},
 		{
 			[3]float64{r.V.Z, r.V.X, r.V.Y},
 			[3]float64{r.D.Z, r.D.X, r.D.Y},
 			p.Pos.Z, p.Pos.X, p.Pos.X + p.Dim[0], p.Pos.Y, p.Pos.Y + p.Dim[1],
-			&Vec3{0, 0, -1},
+			Vec3{0, 0, -1},
 		},
 		{
 			[3]float64{r.V.Z, r.V.X, r.V.Y},
 			[3]float64{r.D.Z, r.D.X, r.D.Y},
 			p.Pos.Z + p.Dim[2], p.Pos.X, p.Pos.X + p.Dim[0], p.Pos.Y, p.Pos.Y + p.Dim[1],
-			&Vec3{0, 0, 1},
+			Vec3{0, 0, 1},
 		},
 	}
 	nearest := math.MaxFloat64
 	found := false
-	var normal *Vec3
+	var normal Vec3
 	for _, q := range queries {
 		d, ok := rprismIntersects(q)
 		if ok {
@@ -108,7 +108,7 @@ func (p *RPrism) Intersect(r Ray) (float64, *Material, *Vec3, *Vec3, bool) {
 	}
 
 	if !found {
-		return 0, nil, nil, nil, false
+		return 0, nil, Vec3{}, Vec3{}, false
 	}
 	pt := r.At(nearest)
 	return nearest, p.Mat, pt, normal, found

@@ -2,5 +2,5 @@ package main
 
 type Polygon struct {
 	plane *Plane
-	verts []*Vec3
+	verts []Vec3
 }
