@@ -28,10 +28,17 @@ func (i *Image) At(x, y int) Color {
 }
 
 func (i *Image) Set(x, y int, c Color) {
-	if x < 0 || x >= i.Width || y < 0 || y >= i.Height {
-		panic("Out of bounds for Set() on Image.")
-	}
+	//if x < 0 || x >= i.Width || y < 0 || y >= i.Height {
+	//        panic("Out of bounds for Set() on Image.")
+	//}
 	i.Pix[y*i.Width+x] = c
+}
+
+func (i *Image) SetLine(y int, c []Color) {
+	if len(c) != i.Width {
+		panic("line of wrong length")
+	}
+	copy(i.Pix[y*i.Width:], c)
 }
 
 // ToneMap scales down the range of colors to 32-bit RGBA. Right now it uses a

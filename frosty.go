@@ -11,6 +11,8 @@ import (
 	"os"
 	"regexp"
 	"runtime"
+
+	"github.com/pkg/profile"
 )
 
 func jsonError(raw []byte, err error) error {
@@ -47,9 +49,14 @@ func main() {
 		supersampling = flag.Int("supersampling", 1, "Supersampling (antialiasing) factor")
 		// Default value of 4 * numcpu is based on some ad hoc testing.
 		parallelism = flag.Int("parallelism", 4*runtime.NumCPU(), "Number of rays to compute in parallel")
+		cpuProfile  = flag.Bool("cpuprofile", false, "Emit CPU profile")
 	)
 	flag.Parse()
 	_ = *debug
+
+	if *cpuProfile {
+		defer profile.Start(profile.CPUProfile).Stop()
+	}
 
 	if *supersampling < 1 || *supersampling > 8 {
 		log.Fatalf("Supersampling should be between 1 and 8; got %d", *supersampling)

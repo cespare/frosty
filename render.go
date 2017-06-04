@@ -15,16 +15,17 @@ func (r *Rendering) Render(parallelism int) *Image {
 	h := int(float64(w) * r.Camera.Aspect)
 	img := NewImage(w, h)
 	scanner := NewLineScanner(r.Camera, r.HPixels)
-
 	var wg sync.WaitGroup
 	wg.Add(parallelism)
 	lines := scanner.Scan()
 	for i := 0; i < parallelism; i++ {
 		go func() {
+			result := make([]Color, scanner.hPixels)
 			for line := range lines {
 				for x := line.xMin; x < line.xMax; x++ {
-					img.Set(x, line.y, r.Trace(line.rays[x]))
+					result[x] = r.Trace(line.rays[x])
 				}
+				img.SetLine(line.y, result)
 			}
 			wg.Done()
 		}()
