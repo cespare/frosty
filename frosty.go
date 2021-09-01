@@ -11,8 +11,7 @@ import (
 	"os"
 	"regexp"
 	"runtime"
-
-	"github.com/pkg/profile"
+	"runtime/pprof"
 )
 
 func jsonError(raw []byte, err error) error {
@@ -54,10 +53,6 @@ func main() {
 	flag.Parse()
 	_ = *debug
 
-	if *cpuProfile {
-		defer profile.Start(profile.CPUProfile).Stop()
-	}
-
 	if *supersampling < 1 || *supersampling > 8 {
 		log.Fatalf("Supersampling should be between 1 and 8; got %d", *supersampling)
 	}
@@ -65,6 +60,22 @@ func main() {
 
 	if *parallelism < 1 {
 		log.Fatalf("Bad value for parallelism (should be at least one): %d", *parallelism)
+	}
+
+	if *cpuProfile {
+		const name = "cpu.pprof"
+		f, err := os.Create(name)
+		if err != nil {
+			log.Fatalln("Error creating CPU profile file:", err)
+		}
+		pprof.StartCPUProfile(f)
+		defer func() {
+			pprof.StopCPUProfile()
+			if err := f.Close(); err != nil {
+				log.Fatalln("Error writing CPU profile", err)
+			}
+			log.Println("Stored CPU profile to", name)
+		}()
 	}
 
 	raw, err := ioutil.ReadFile(*sceneFile)
