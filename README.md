@@ -6,7 +6,7 @@ It was written for the experience of creating a raytracer, not as a serious proj
 
 ## Installation
 
-    go get github.com/cespare/frosty
+    go install github.com/cespare/frosty@latest
 
 ## Usage
 
